@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AquaFreight — Shipment Management System</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="logo-icon">⚓</div>
+                <span class="logo-text">AquaFreight</span>
+            </div>
+            <div class="login-title">Welcome Back</div>
+            <div class="login-sub">Sign in to your shipment management portal</div>
+            
+            <div class="login-error" id="login-error">⚠ Invalid credentials. Please try again.</div>
+            
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" id="login-email" placeholder="admin@aquafreight.com" value="admin@aquafreight.com"/>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrap">
+                    <input type="password" class="form-input" id="login-pw" placeholder="••••••••" value="admin123"/>
+                    <span class="toggle-pw" onclick="togglePw()">👁</span>
+                </div>
+            </div>
+            
+            <div class="login-remember">
+                <input type="checkbox" id="remember" checked/>
+                <label for="remember">Keep me signed in</label>
+            </div>
+            
+            <button class="login-btn" onclick="doLogin()">Sign In to Portal</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon-sm">⚓</div>
+                <span class="logo-name">AquaFreight</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <div class="nav-item active" onclick="showPage('dashboard', this)">
+                    <span class="nav-icon">📊</span> Dashboard
+                </div>
+                <div class="nav-item" onclick="showPage('booking', this)">
+                    <span class="nav-icon">📋</span> Shipment Booking
+                </div>
+
+                <div class="nav-section-label">Masters</div>
+                <div class="nav-item" onclick="showPage('ships', this)">
+                    <span class="nav-icon">🚢</span> Ship Master
+                </div>
+                <div class="nav-item" onclick="showPage('customers', this)">
+                    <span class="nav-icon">👤</span> Customer Master
+                </div>
+
+                <div class="nav-section-label">Operations</div>
+                <div class="nav-item" onclick="showPage('shipments', this)">
+                    <span class="nav-icon">📦</span> Shipment List
+                </div>
+            </nav>
+        </aside>
+
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <span class="topbar-title" id="topbar-title">Dashboard</span>
+            <div class="topbar-actions">
+                <button class="topbar-btn" title="Notifications">🔔</button>
+                <button class="topbar-btn" title="Settings">⚙️</button>
+                <div class="avatar">AK</div>
+                <button class="logout-btn" onclick="doLogout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" style="width: 100%;">
+
+            <!-- DASHBOARD PAGE -->
+            <div class="page active" id="page-dashboard">
+                <div class="section-title">Dashboard Overview</div>
+                <div class="section-sub">Real-time shipment analytics & performance metrics</div>
+
+                <div class="stats-grid">
+                    <div class="stat-card" style="--accent:var(--cyan)">
+                        <div class="stat-icon" style="background:rgba(0,200,224,0.1)">📦</div>
+                        <div class="stat-value">1,284</div>
+                        <div class="stat-label">Total Shipments</div>
+                        <div class="stat-change up">↑ 12.4% vs last month</div>
+                    </div>
+                    <div class="stat-card" style="--accent:var(--amber)">
+                        <div class="stat-icon" style="background:rgba(240,165,0,0.1)">🕐</div>
+                        <div class="stat-value">48</div>
+                        <div class="stat-label">Upcoming</div>
+                        <div class="stat-change up">↑ 5 new this week</div>
+                    </div>
+                    <div class="stat-card" style="--accent:var(--steel-2)">
+                        <div class="stat-icon" style="background:rgba(30,74,138,0.3)">🚢</div>
+                        <div class="stat-value">127</div>
+                        <div class="stat-label">Ongoing</div>
+                        <div class="stat-change down">↓ 3 delayed</div>
+                    </div>
+                    <div class="stat-card" style="--accent:var(--success)">
+                        <div class="stat-icon" style="background:rgba(46,204,138,0.1)">✅</div>
+                        <div class="stat-value">1,109</div>
+                        <div class="stat-label">Delivered</div>
+                        <div class="stat-change up">↑ 98.2% on time</div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <div class="chart-title">Shipment Trend</div>
+                        <div class="chart-sub">Monthly shipments over the year</div>
+                        <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">Status Distribution</div>
+                        <div class="chart-sub">Current shipment status breakdown</div>
+                        <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="chart-card">
+                        <div class="chart-title">Ship-wise Shipment Volume</div>
+                        <div class="chart-sub">Top 6 vessels by cargo count</div>
+                        <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="chart-title" style="margin-bottom:14px">Recent Activity</div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-dot" style="background:var(--success)"></div>
+                                <div>
+                                    <div class="activity-msg">SHP-2024-1284 delivered at Chennai Port</div>
+                                    <div class="activity-time">2 hours ago</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-dot" style="background:var(--danger)"></div>
+                                <div>
+                                    <div class="activity-msg">SHP-2024-1280 delayed — weather alert</div>
+                                    <div class="activity-time">4 hours ago</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-dot" style="background:var(--amber)"></div>
+                                <div>
+                                    <div class="activity-msg">MV Titan departed Mumbai Port</div>
+                                    <div class="activity-time">6 hours ago</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-dot" style="background:var(--cyan)"></div>
+                                <div>
+                                    <div class="activity-msg">New booking by Reliance Industries</div>
+                                    <div class="activity-time">Yesterday, 11:30 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SHIPMENT BOOKING PAGE -->
+            <div class="page" id="page-booking">
+                <div class="section-title">Create Shipment Booking</div>
+                <div class="section-sub">Fill in all required details to create a new shipment booking</div>
+
+                <div class="booking-form">
+                    <div class="form-grid">
+                        <div class="form-section-label">📋 Shipment Information</div>
+                        <div class="field-group">
+                            <label class="field-label">Shipment ID</label>
+                            <div class="field-auto">SHP-2024-1285</div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Booking Date</label>
+                            <input type="date" class="field-input" value="2024-04-02"/>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Shipment Type</label>
+                            <select class="field-select">
+                                <option>Select Type</option>
+                                <option>Export</option>
+                                <option>Import</option>
+                                <option>Transshipment</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Cargo Type</label>
+                            <select class="field-select">
+                                <option>Select Cargo</option>
+                                <option>General Cargo</option>
+                                <option>Bulk Cargo</option>
+                                <option>Liquid Cargo</option>
+                                <option>Refrigerated</option>
+                                <option>Hazardous</option>
+                                <option>Oversized</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Weight (MT)</label>
+                            <input type="number" class="field-input" placeholder="e.g. 2500"/>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Container Number</label>
+                            <input type="text" class="field-input" placeholder="e.g. MSKU1234567"/>
+                        </div>
+
+                        <div class="form-section-label">🚢 Ship Details</div>
+                        <div class="field-group">
+                            <label class="field-label">Ship Name</label>
+                            <select class="field-select" onchange="autoFillShip(this)">
+                                <option value="">Select Ship</option>
+                                <option value="S001">MV Titan</option>
+                                <option value="S002">MV Neptune</option>
+                                <option value="S003">MV Horizon</option>
+                                <option value="S004">MV Orion</option>
+                                <option value="S005">MV Atlas</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Ship ID</label>
+                            <div class="field-auto" id="ship-id-fill">—</div>
+                        </div>
+                        <div class="field-group form-full">
+                            <label class="field-label">Capacity (MT)</label>
+                            <div class="field-auto" id="ship-cap-fill">—</div>
+                        </div>
+
+                        <div class="form-section-label">👤 Customer Details</div>
+                        <div class="field-group">
+                            <label class="field-label">Customer Name</label>
+                            <select class="field-select" onchange="autoFillCustomer(this)">
+                                <option value="">Select Customer</option>
+                                <option value="C001">Reliance Industries</option>
+                                <option value="C002">Tata Steel</option>
+                                <option value="C003">ONGC</option>
+                                <option value="C004">Adani Ports</option>
+                                <option value="C005">L&amp;T Shipping</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Email</label>
+                            <div class="field-auto" id="cust-email-fill">—</div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Phone</label>
+                            <div class="field-auto" id="cust-phone-fill">—</div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Address</label>
+                            <div class="field-auto" id="cust-addr-fill">—</div>
+                        </div>
+
+                        <div class="form-section-label">🗺 Route Information</div>
+                        <div class="field-group">
+                            <label class="field-label">Source Port</label>
+                            <select class="field-select">
+                                <option>Select Source Port</option>
+                                <option>Mumbai Port</option>
+                                <option>JNPT Port</option>
+                                <option>Chennai Port</option>
+                                <option>Kandla Port</option>
+                                <option>Visakhapatnam Port</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Destination Port</label>
+                            <select class="field-select">
+                                <option>Select Destination Port</option>
+                                <option>Dubai (Jebel Ali)</option>
+                                <option>Singapore (PSA)</option>
+                                <option>Rotterdam</option>
+                                <option>Shanghai</option>
+                                <option>Colombo</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Departure Date</label>
+                            <input type="date" class="field-input"/>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Estimated Arrival</label>
+                            <input type="date" class="field-input"/>
+                        </div>
+                        <div class="field-group form-full">
+                            <label class="field-label">Special Instructions</label>
+                            <textarea class="field-textarea" placeholder="Any special handling or customs notes..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-reset" onclick="resetBooking()">🔄 Reset Form</button>
+                        <button class="btn-submit" onclick="submitBooking()">✅ Submit Booking</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SHIP MASTER PAGE -->
+            <div class="page" id="page-ships">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;">
+                    <div>
+                        <div class="section-title">Ship Master</div>
+                        <div class="section-sub">Manage your fleet of vessels</div>
+                    </div>
+                    <button class="btn-primary" onclick="openModal('modal-add-ship')">+ Add New Ship</button>
+                </div>
+
+                <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+                    <div class="stat-card" style="--accent:var(--success)">
+                        <div class="stat-value" style="font-size:28px">12</div>
+                        <div class="stat-label">Total Ships</div>
+                    </div>
+                    <div class="stat-card" style="--accent:var(--cyan)">
+                        <div class="stat-value" style="font-size:28px">9</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                    <div class="stat-card" style="--accent:var(--warning)">
+                        <div class="stat-value" style="font-size:28px">2</div>
+                        <div class="stat-label">Maintenance</div>
+                    </div>
+                    <div class="stat-card" style="--accent:var(--danger)">
+                        <div class="stat-value" style="font-size:28px">1</div>
+                        <div class="stat-label">Inactive</div>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-toolbar">
+                        <span class="table-toolbar-title">Fleet Registry</span>
+                        <div class="search-wrap">
+                            <input type="text" class="search-input" placeholder="Search ships..."/>
+                        </div>
+                        <select class="filter-select">
+                            <option>All Types</option>
+                            <option>Cargo</option>
+                            <option>Tanker</option>
+                            <option>Container</option>
+                            <option>Bulk Carrier</option>
+                        </select>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ship ID</th><th>Name</th><th>Type</th>
+                                <th>Capacity (MT)</th><th>Flag</th><th>Built</th><th>Status</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS if needed -->
+                            <tr>
+                                <td><span class="td-mono">S001</span></td>
+                                <td><b>MV Titan</b><div class="td-sub">IMO: 9876543</div></td>
+                                <td>Bulk Carrier</td><td>52,000</td>
+                                <td>🇮🇳 India</td><td>2018</td>
+                                <td><span class="badge badge-success">● Active</span></td>
+                                <td><button class="btn-edit">Edit</button><button class="btn-danger">Delete</button></td>
+                            </tr>
+                            <!-- More rows can be added -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CUSTOMER MASTER PAGE -->
+            <div class="page" id="page-customers">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;">
+                    <div>
+                        <div class="section-title">Customer Master</div>
+                        <div class="section-sub">Manage all client accounts and details</div>
+                    </div>
+                    <button class="btn-primary" onclick="openModal('modal-add-cust')">+ Add Customer</button>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-toolbar">
+                        <span class="table-toolbar-title">Customer Registry</span>
+                        <div class="search-wrap">
+                            <input type="text" class="search-input" placeholder="Search customers..."/>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
+                                <th>Company</th><th>City</th><th>Shipments</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Sample data -->
+                            <tr>
+                                <td><span class="td-mono">C001</span></td>
+                                <td><b>Rajesh Mehta</b></td>
+                                <td>r.mehta@reliance.com</td>
+                                <td>+91 98765 43210</td>
+                                <td>Reliance Industries</td>
+                                <td>Mumbai</td><td>84</td>
+                                <td><button class="btn-edit">Edit</button><button class="btn-danger">Delete</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SHIPMENT LIST PAGE -->
+            <div class="page" id="page-shipments">
+                <div class="section-title">Shipment Tracking</div>
+                <div class="section-sub">Monitor, update and track all active and past shipments</div>
+
+                <div class="filters-row">
+                    <div class="search-wrap" style="flex:1;max-width:260px">
+                        <input type="text" class="search-input" placeholder="Search by Shipment ID..." style="width:100%;"/>
+                    </div>
+                    <select class="filter-select">
+                        <option>All Status</option>
+                        <option>Pending</option>
+                        <option>In Transit</option>
+                        <option>Delivered</option>
+                        <option>Delayed</option>
+                    </select>
+                    <button class="btn-secondary">🔍 Filter</button>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-toolbar">
+                        <span class="table-toolbar-title">All Shipments</span>
+                        <button class="btn-primary" onclick="showPage('booking', document.querySelector('[onclick*=booking]'))">+ New Shipment</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Shipment ID</th><th>Customer</th><th>Ship</th>
+                                <th>Route</th><th>Cargo</th><th>Weight</th>
+                                <th>Status</th><th>ETA</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shipment-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Add Ship Modal -->
+    <div class="modal-overlay" id="modal-add-ship">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Add New Ship</div>
+                <button class="modal-close" onclick="closeModal('modal-add-ship')">✕</button>
+            </div>
+            <!-- Form content here (same as original) -->
+            <div class="form-actions">
+                <button class="btn-reset" onclick="closeModal('modal-add-ship')">Cancel</button>
+                <button class="btn-submit" onclick="closeModal('modal-add-ship');showToast('Ship added successfully!')">Save Ship</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div class="modal-overlay" id="modal-add-cust">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Add New Customer</div>
+                <button class="modal-close" onclick="closeModal('modal-add-cust')">✕</button>
+            </div>
+            <!-- Form content here -->
+            <div class="form-actions">
+                <button class="btn-reset" onclick="closeModal('modal-add-cust')">Cancel</button>
+                <button class="btn-submit" onclick="closeModal('modal-add-cust');showToast('Customer added successfully!')">Save Customer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">
+        <span id="toast-msg"></span>
+    </div>
+
+
+    <!-- Add Ship Modal -->
+<div class="modal-overlay" id="modal-add-ship">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Ship</div>
+      <button class="modal-close" onclick="closeModal('modal-add-ship')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="field-group">
+        <label class="field-label">Ship Name</label>
+        <input type="text" id="new-ship-name" class="field-input" placeholder="e.g. MV Discovery"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Ship ID</label>
+        <input type="text" class="field-input" placeholder="e.g. S006"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">IMO Number</label>
+        <input type="text" class="field-input" placeholder="e.g. 9876543"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Capacity (MT)</label>
+        <input type="number" class="field-input" placeholder="e.g. 45000"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Ship Type</label>
+        <select class="field-select">
+          <option>Bulk Carrier</option>
+          <option>Container</option>
+          <option>Tanker</option>
+          <option>Cargo</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Flag Country</label>
+        <select class="field-select">
+          <option>India</option>
+          <option>Singapore</option>
+          <option>Panama</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-reset" onclick="closeModal('modal-add-ship')">Cancel</button>
+      <button class="btn-submit" onclick="saveNewShip()">Save Ship</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal-overlay" id="modal-add-cust">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Customer</div>
+      <button class="modal-close" onclick="closeModal('modal-add-cust')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="field-group">
+        <label class="field-label">Customer Name</label>
+        <input type="text" id="new-customer-name" class="field-input" placeholder="Full name"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Company Name</label>
+        <input type="text" class="field-input" placeholder="Company name"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Email</label>
+        <input type="email" class="field-input" placeholder="email@company.com"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Phone</label>
+        <input type="text" class="field-input" placeholder="+91 XXXXX XXXXX"/>
+      </div>
+      <div class="field-group form-full">
+        <label class="field-label">Address</label>
+        <textarea class="field-textarea" placeholder="Full address"></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-reset" onclick="closeModal('modal-add-cust')">Cancel</button>
+      <button class="btn-submit" onclick="saveNewCustomer()">Save Customer</button>
+    </div>
+  </div>
+</div>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
